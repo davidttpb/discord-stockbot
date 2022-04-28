@@ -1,34 +1,25 @@
 import discord
-
 from discord.ext import commands, tasks
-
 import tokens
-
 from datetime import datetime, timedelta
 import pandas
 from pandas_datareader import data as pdr
 import yfinance as yfin
 
 yfin.pdr_override()
-
 import matplotlib.pyplot as plt
 import asyncio
-
 from newsapi import NewsApiClient
-
 from bs4 import BeautifulSoup
 import requests
 
 DISCORD_TOKEN = tokens.variables['DISCORD_TOKEN']
-
 NEWSAPI_TOKEN = tokens.variables['NEWSAPI_TOKEN']
 newsapi = NewsApiClient(api_key=NEWSAPI_TOKEN)
-
 bot = commands.Bot(command_prefix='!')
-
 daily_news_dict = set()
 
-
+# Bot command, when user uses this command it returns a trading view link of the stock they are asking for
 @bot.command(name="graph", help="Returns a trading view link of a given stock")
 async def graph(ctx, quo="msft"):
     response = "https://www.tradingview.com/symbols/" + quo
@@ -76,7 +67,7 @@ async def called_once_a_day():
                     continue
 
 
-# To make send news before market open hours
+# This sends out news before market open
 @called_once_a_day.before_loop
 async def before():
     tomorrow = datetime.now() + timedelta(1)
@@ -105,7 +96,7 @@ async def set_daily_news(ctx):
                           color=discord.Color.blue())
     embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
 
-    # write to a file to save this
+    # writes to the filename
     write_to_file("daily_news_ids.txt", unique_id)
 
     await ctx.send(embed=embed)
@@ -136,10 +127,10 @@ async def chart(ctx, quo="msft"):
     old_date = str(old_year) + '-' + current_date_arr[1] + '-' + current_date_arr[2]
 
     data = get_data(quo, old_date, current_date)
-    # clear the graph before creating one
+    # clears out the graph before sending out a new one
     plt.clf()
 
-    # plot the graph and store it in a variable
+    # this plots the graph then stores it into a variable
     plot = data.plot(title='Stock Price over 2 years')
     fig = plot.get_figure()
     filename = 'output.png'
